@@ -8,6 +8,10 @@
 - `terraform apply`
 - `terraform destroy`
 
+### Utilitários
+
+- `terraform apply -auto-approve` // aplica as configurações precisar de confirmação
+
 ## Utilizando variáveis de ambiente
 
 ```bash
