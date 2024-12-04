@@ -21,6 +21,7 @@ resource "aws_s3_bucket" "my-test-bucket" {
 
   tags = {
     Name        = "Bucket created by Terraform"
+    NewTag      = "test"
     Environment = "dev"
     Managedby   = "terraform"
   }
