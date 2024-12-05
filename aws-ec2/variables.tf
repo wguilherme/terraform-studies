@@ -1,3 +1,8 @@
+variable "environment" {
+  type        = string
+  description = "Variável que vai ser definida pelo arquivo <*>.tfvars"
+}
+
 variable "aws_region" {
   type        = string
   description = ""

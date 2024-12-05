@@ -12,6 +12,16 @@
 
 - `terraform apply -auto-approve` // aplica as configurações precisar de confirmação
 
+#### Arquivos .tfvars
+
+O terraform lê automaticamente apenas o arquivo terraform.tfvars ou arquivos com extensão *.auto.tfvars.
+Para outros arquivos .tfvars, você precisa especificá-los explicitamente usando o flag -var-file:
+
+```bash
+terraform plan -var-file="dev.tfvars"
+terraform apply -var-file="dev.tfvars"
+```
+
 ## Utilizando variáveis de ambiente
 
 ```bash
