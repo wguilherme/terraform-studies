@@ -13,12 +13,12 @@ variable "aws_profile" {
 variable "instance_ami" {
   type        = string
   description = ""
-  default     = "ami-0b8c6b923777519db"
+  default     = "ami-005fc0f236362e99f" // ubuntu 22.04
 }
 
 variable "instance_type" {
   type        = string
-  description = ""
+  description = "Nome da instância do EC2, utilize e nomenclatura AMI da AWS"
   default     = "t2.nano"
 }
 
@@ -26,7 +26,7 @@ variable "instance_tags" {
   type        = map(string)
   description = ""
   default = {
-    Name    = "instance created by terraform"
+    Name    = "instance-001"
     Project = "terraform-study"
   }
 }
