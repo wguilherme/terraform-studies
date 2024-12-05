@@ -11,6 +11,7 @@
 ### Utilitários
 
 - `terraform apply -auto-approve` // aplica as configurações precisar de confirmação
+- `terraform init -upgrade` // atualiza o terraform e suas dependências
 
 #### Arquivos .tfvars
 
