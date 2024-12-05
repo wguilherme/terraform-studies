@@ -22,6 +22,14 @@ terraform plan -var-file="dev.tfvars"
 terraform apply -var-file="dev.tfvars"
 ```
 
+#### Precedência de Definição de Variável
+
+1 - Variáveis de ambiente
+2 - Arquivo `terraform.tfvars`
+3 - Arquivo `terraform.tfvars.json`
+4 - Arquivo `*.auto.tfvars` ou `*.auto.tfvars.json`
+5 - Qualquer opção `-var` ou `-var-file` passada na linha de comando, na ordem fornecida
+
 ## Utilizando variáveis de ambiente
 
 ```bash
