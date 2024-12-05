@@ -98,17 +98,30 @@ terraform plan -out=tfplan
 
 ```
 
-```bash
-# Comando para visualizar as configurações
-terraform graph
-```
+
+## Troubleshooting
+
+### Comandos úteis
 
 ```bash
-# Comando para visualizar as configurações
-terraform state
-```
-
-```bash
-# Comando para visualizar as configurações
+# Terraform console
 terraform console
+# após rodar o comando, navegar pelas configs <resource.path>,
+#  ex.: aws_s3_bucket.this
+#  ex.: aws_s3_bucket.this.tags
+# 
+
+
+# Visualizar os arquivos de configuração
+terraform show
+
+# Visualizar as configurações
+terraform state
+
+# Visualizar as configurações
+terraform graph
+
+
+#  Formatar o código
+terraform fmt
 ```
