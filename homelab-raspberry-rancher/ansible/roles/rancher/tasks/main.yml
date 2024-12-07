@@ -1,0 +1,52 @@
+# Máquina que vai executar o Rancher e gerenciar os clusters K8S
+---
+- name: Download e instala Docker
+  shell: curl https://releases.rancher.com/install-docker/20.10.sh | sh
+  args:
+    creates: /usr/bin/docker
+
+- name: Adiciona usuário ubuntu ao grupo docker
+  user:
+    name: ubuntu
+    groups: docker
+    append: yes
+
+- name: Garante que o Docker está rodando
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Roda container Rancher
+  docker_container:
+    name: rancher
+    image: rancher/rancher:v2.6.9
+    state: started
+    restart_policy: unless-stopped
+    published_ports:
+      - "80:80"
+      - "443:443"
+    privileged: yes
+
+- name: Verifica se container do Rancher está rodando
+  shell: docker ps | grep rancher/rancher
+  register: container_check
+  until: container_check.rc == 0
+  retries: 30
+  delay: 10
+
+- name: Obtém ID do container Rancher
+  shell: docker ps -q -f name=rancher
+  register: container_id
+
+- name: Obtém senha do Bootstrap do Rancher
+  shell: docker logs {{ container_id.stdout }} 2>&1 | grep "Bootstrap Password:"
+  register: rancher_password
+  until: rancher_password.rc == 0
+  retries: 30
+  delay: 10
+
+- name: Mostra a senha do Rancher
+  debug:
+    msg: |
+      SENHA DO RANCHER: {{ rancher_password.stdout }}

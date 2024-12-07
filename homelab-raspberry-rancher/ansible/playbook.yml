@@ -1,0 +1,16 @@
+# playbook.yml
+---
+- hosts: rancher
+  become: true
+  roles:
+    - rancher
+
+- hosts: kubernetes
+  become: true
+  roles:
+    - kubernetes
+
+- hosts: ollama
+  become: true
+  roles:
+    - ollama

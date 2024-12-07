@@ -3,7 +3,7 @@
 Configure seu CLI do terraform,
 altere o profile, região e configurações no arquivo `.main.tf`
 
-Execute o comando `make init` e `make apply` para rodar o terraform e criar a infraestrutura
+Execute o comando `make apply` para rodar o terraform e criar a infraestrutura
 
 ## Ansible
 
@@ -30,28 +30,15 @@ Após copiar o código gerado pelo rancher, acesse, via ssh, a máquina do kuber
 
 Quando o cluster estiver pronto, copie ou baixe o arquivo `kubeconfig` pela interface do rancher. 
 
-### Preparando o ingress
-
-Com o kubeconfig copiado, copie o IP da máquina kubernetes (`ansible/inventory.ini`) e configure o seu DNS apontando todos os domínios para o IP da máquina kubernetes, ex: `127.0.0.1`.
-
 ### Conclusão
 
 Neste ponto, você deve ter a seguinnte infraestrutura:
 
-3 máquina EC2 (rancher, kubernetes e ollama)
-
-**Máquina kubernetes:**
-- Rodando o kubernetes criado via rancher
-- DNS apontando para o IP da máquina
-- Arquivo kubeconfig copiado e acessível pela máquina que vai operar
+1 máquina EC2 (rancher)
 
 **Máquina rancher**
 - Rodando o rancher no docker
 - Gerenciando o cluster de kubernetes criado
-
-**Máquina ollama:**
-1 ollama com os modelos prontos e acessíveis
-1 ollama web ui rodando
 
 ## Troubleshooting
 
