@@ -1,4 +1,4 @@
-# roles/rancher/tasks/main.yml
+# Máquina que vai executar o Rancher e gerenciar os clusters K8S
 ---
 - name: Download e instala Docker
   shell: curl https://releases.rancher.com/install-docker/20.10.sh | sh

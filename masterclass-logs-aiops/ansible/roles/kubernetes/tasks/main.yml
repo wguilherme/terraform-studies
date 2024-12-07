@@ -1,4 +1,4 @@
-# roles/kubernetes/tasks/main.yml
+# Máquina que vai executar o script gerado pelo rancher para instalar o kubernetes
 ---
 - name: Download e instala Docker
   shell: curl https://releases.rancher.com/install-docker/20.10.sh | sh

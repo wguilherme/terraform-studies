@@ -1,0 +1,75 @@
+# Máquina que vai executar o ollama, executar modelos e expor uma interface API REST e WebUI
+---
+- name: Atualiza cache do apt
+  apt:
+    update_cache: yes
+  become: true
+
+- name: Instala dependências
+  apt:
+    name: "{{ item }}"
+    state: present
+  become: true
+  with_items:
+    - nodejs
+    - npm
+    - curl
+
+- name: Instala vtop via npm
+  npm:
+    name: vtop
+    global: yes
+  become: true
+
+- name: Instala Docker via script oficial
+  shell: |
+    curl https://releases.rancher.com/install-docker/20.10.sh | sh
+  become: true
+
+- name: Adiciona usuário ubuntu ao grupo docker
+  user:
+    name: ubuntu
+    groups: docker
+    append: yes
+  become: true
+
+- name: Cria container Ollama
+  docker_container:
+    name: ollama
+    image: ollama/ollama
+    state: started
+    restart_policy: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+
+- name: Cria container Ollama WebUI
+  docker_container:
+    name: ollama-webui
+    image: ghcr.io/ollama-webui/ollama-webui:main
+    state: started
+    restart_policy: always
+    ports:
+      - "3000:8080"
+    volumes:
+      - ollama-webui:/app/backend/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+- name: Download dos modelos mais usados
+  shell: "{{ item }}"
+  with_items:
+    - docker exec -it ollama ollama pull llama3
+    - docker exec -it ollama ollama pull llama3.2
+    - docker exec -it ollama ollama pull mistral
+    - docker exec -it ollama ollama pull mistral-nemo
+    - docker exec -it ollama ollama pull gemma
+
+- name: Lista modelos instalados
+  shell: docker exec -it ollama ollama list
+  register: models_list
+
+- name: Mostra modelos disponíveis
+  debug:
+    var: models_list.stdout_lines
