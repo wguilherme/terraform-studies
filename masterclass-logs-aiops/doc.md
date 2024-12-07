@@ -28,6 +28,31 @@ Crie um novo nó que seja etcd, control-plane e worker.
 
 Após copiar o código gerado pelo rancher, acesse, via ssh, a máquina do kubernetes, o IP pode ser consultado no arquivo `ansible/inventory.ini`. Execute o comando e acompanhe o progresso pela UI do rancher.
 
+Quando o cluster estiver pronto, copie ou baixe o arquivo `kubeconfig` pela interface do rancher. 
+
+### Preparando o ingress
+
+Com o kubeconfig copiado, copie o IP da máquina kubernetes (`ansible/inventory.ini`) e configure o seu DNS apontando todos os domínios para o IP da máquina kubernetes, ex: `127.0.0.1`.
+
+### Conclusão
+
+Neste ponto, você deve ter a seguinnte infraestrutura:
+
+3 máquina EC2 (rancher, kubernetes e ollama)
+
+**Máquina kubernetes:**
+- Rodando o kubernetes criado via rancher
+- DNS apontando para o IP da máquina
+- Arquivo kubeconfig copiado e acessível pela máquina que vai operar
+
+**Máquina rancher**
+- Rodando o rancher no docker
+- Gerenciando o cluster de kubernetes criado
+
+**Máquina ollama:**
+1 ollama com os modelos prontos e acessíveis
+1 ollama web ui rodando
+
 ## Troubleshooting
 
 Veja comandos úteis para troubleshooting e debug executando o comando `make help`
