@@ -49,6 +49,4 @@
 - name: Mostra a senha do Rancher
   debug:
     msg: |
-      ========================================
       SENHA DO RANCHER: {{ rancher_password.stdout }}
-      ========================================

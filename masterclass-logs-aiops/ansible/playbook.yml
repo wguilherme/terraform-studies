@@ -9,3 +9,8 @@
   become: true
   roles:
     - kubernetes
+
+- hosts: ollama
+  become: true
+  roles:
+    - ollama
