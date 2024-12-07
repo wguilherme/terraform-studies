@@ -16,25 +16,3 @@
     name: docker
     state: started
     enabled: yes
-
-- name: Roda Rancher agent
-  docker_container:
-    name: rancher-agent
-    image: rancher/rancher-agent:v2.6.9
-    state: started
-    restart_policy: unless-stopped
-    network_mode: host
-    privileged: yes
-    volumes:
-      - /etc/kubernetes:/etc/kubernetes
-      - /var/run:/var/run
-    command:
-      - "--server"
-      - "https://13.59.74.126"
-      - "--token"
-      - "dff9svgw8h8z6hvkdvqdqxfxx6hknk5hjcsd25fs7kmdz4clp78ft5"
-      - "--ca-checksum"
-      - "b740dd2823db1225b53a8087520a0f07de8c5a54a83b95c996774aa850c17d76"
-      - "--etcd"
-      - "--controlplane"
-      - "--worker"
