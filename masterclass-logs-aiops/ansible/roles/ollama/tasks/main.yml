@@ -33,6 +33,40 @@
     append: yes
   become: true
 
+- name: Cria rede Docker para Ollama
+  docker_network:
+    name: ollama_network
+    state: present
+    driver: bridge
+
+- name: Cria container Ollama
+  docker_container:
+    name: ollama
+    image: ollama/ollama
+    state: started
+    restart_policy: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    networks:
+      - name: ollama_network
+
+- name: Cria container Ollama WebUI
+  docker_container:
+    name: ollama-webui
+    image: ghcr.io/ollama-webui/ollama-webui:main
+    state: started
+    restart_policy: always
+    ports:
+      - "3000:8080"
+    volumes:
+      - ollama-webui:/app/backend/data
+    networks:
+      - name: ollama_network
+    env:
+      OLLAMA_API_BASE_URL: "http://ollama:11434/api"
+
 - name: Cria container Ollama
   docker_container:
     name: ollama
@@ -54,8 +88,14 @@
       - "3000:8080"
     volumes:
       - ollama-webui:/app/backend/data
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    networks:
+      - name: ollama_network
+    env:
+      OLLAMA_API_BASE_URL: "http://ollama:11434/api"
+
+- name: Adiciona entrada no /etc/hosts do container
+  shell: |
+    docker exec ollama-webui bash -c 'echo "host-gateway ollama" >> /etc/hosts'
 
 - name: Download dos modelos mais usados
   shell: "{{ item }}"
