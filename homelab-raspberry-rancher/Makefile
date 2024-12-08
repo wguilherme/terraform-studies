@@ -33,7 +33,10 @@ destroy:
 # Ansible commands
 ansible: check-key
 	@echo "${GREEN}Executando Ansible...${NC}"
-	@cd $(ANSIBLE_DIR) && ansible-playbook -i inventory.ini playbook.yml
+	@cd $(ANSIBLE_DIR) && ansible-playbook -i inventory.ini playbook.yml $(if $(HOST),-l $(HOST))
+# ansible: check-key
+# 	@echo "${GREEN}Executando Ansible...${NC}"
+# 	@cd $(ANSIBLE_DIR) && ansible-playbook -i inventory.ini playbook.yml
 
 # Verificação da chave SSH
 check-key:

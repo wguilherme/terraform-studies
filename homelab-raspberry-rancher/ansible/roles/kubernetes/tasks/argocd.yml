@@ -1,0 +1,84 @@
+---
+- name: Setup ArgoCD
+  block:
+    - name: Criar namespace argocd
+      kubernetes.core.k8s:
+        name: argocd
+        api_version: v1
+        kind: Namespace
+        state: present
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+    - name: Instalar ArgoCD
+      kubernetes.core.k8s:
+        state: present
+        src: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+    - name: Aguardar pods do ArgoCD estarem prontos
+      shell: |
+        kubectl wait --for=condition=Ready pods --all -n argocd --timeout=300s
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+    - name: Criar arquivo de configuração do ArgoCD
+      copy:
+        dest: /tmp/argocd-app.yaml
+        content: |
+          apiVersion: argoproj.io/v1alpha1
+          kind: Application
+          metadata:
+            name: recursos-cluster
+            namespace: argocd
+          spec:
+            project: default
+            source:
+              repoURL: https://github.com/wguilherme/platform
+              targetRevision: main
+              path: homelab-v3/infra/k8s/resources
+              directory:
+                recurse: true
+            destination:
+              server: https://kubernetes.default.svc
+              namespace: default
+            syncPolicy:
+              automated:
+                prune: true
+                selfHeal: true
+              syncOptions:
+                - CreateNamespace=true
+                - PrunePropagationPolicy=foreground
+                - PruneLast=true
+
+    - name: Aplicar configuração do ArgoCD
+      kubernetes.core.k8s:
+        state: present
+        src: /tmp/argocd-app.yaml
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+    - name: Obter senha inicial do ArgoCD
+      shell: |
+        kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+      register: argocd_password
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+    - name: Mostrar credenciais do ArgoCD
+      debug:
+        msg: |
+          ArgoCD está instalado no namespace argocd
+          Usuário: admin
+          Senha: {{ argocd_password.stdout }}
+
+          Para acessar o ArgoCD UI, você pode:
+          1. Usar port-forward: kubectl port-forward svc/argocd-server -n argocd 8080:443
+          2. Configurar um Ingress
+          3. Usar um LoadBalancer
+
+    - name: Remover arquivo temporário
+      file:
+        path: /tmp/argocd-app.yaml
+        state: absent
