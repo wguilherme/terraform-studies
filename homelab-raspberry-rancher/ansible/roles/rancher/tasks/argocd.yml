@@ -15,10 +15,10 @@
 # - Opções de acesso (port-forward, ingress, loadbalancer)
 # Remove o arquivo temporário de configuração
 ---
-- name: Instala e configura ArgoCD
+- name: Instalação e Configuração do ArgoCD
   become: true
 
-- name: Cria namespace argocd
+- name: Criar namespace argocd
   kubernetes.core.k8s:
     name: argocd
     api_version: v1
@@ -27,14 +27,14 @@
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
-- name: Instala ArgoCD
+- name: Instalar ArgoCD
   kubernetes.core.k8s:
     state: present
     src: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
-- name: Aguarda pods do ArgoCD estarem prontos
+- name: Aguardar pods do ArgoCD estarem prontos
   kubernetes.core.k8s_wait:
     kind: Pod
     namespace: argocd
@@ -46,7 +46,7 @@
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
-- name: Cria arquivo de configuração do ArgoCD
+- name: Criar arquivo de configuração do ArgoCD
   copy:
     dest: /tmp/argocd-app.yaml
     content: |
@@ -58,9 +58,9 @@
       spec:
         project: default
         source:
-          repoURL: https://github.com/seu-usuario/seu-repo
-          targetRevision: HEAD
-          path: resources
+          repoURL: https://github.com/wguilherme/platform
+          targetRevision: main
+          path: homelab-v3/infra/k8s/resources
           directory:
             recurse: true
         destination:
@@ -75,21 +75,21 @@
             - PrunePropagationPolicy=foreground
             - PruneLast=true
 
-- name: Aplica configuração do ArgoCD
+- name: Aplicar configuração do ArgoCD
   kubernetes.core.k8s:
     state: present
     src: /tmp/argocd-app.yaml
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
-- name: Obtém senha inicial do ArgoCD
+- name: Obter senha inicial do ArgoCD
   shell: |
     kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
   register: argocd_password
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
-- name: Mostra credenciais do ArgoCD
+- name: Mostrar credenciais do ArgoCD
   debug:
     msg: |
       ArgoCD está instalado no namespace argocd
@@ -101,7 +101,7 @@
       2. Configurar um Ingress
       3. Usar um LoadBalancer
 
-- name: Remove arquivo temporário
+- name: Remover arquivo temporário
   file:
     path: /tmp/argocd-app.yaml
     state: absent

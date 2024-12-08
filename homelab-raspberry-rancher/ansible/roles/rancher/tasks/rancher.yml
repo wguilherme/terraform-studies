@@ -1,0 +1,96 @@
+# Desativa o firewall
+# Instala o K3s na versão específica
+# Verifica se o K3s está rodando
+# Obtém e modifica o kubeconfig com o IP correto
+# Salva o kubeconfig modificado localmente
+# Instala o Helm
+# Instala o cert-manager (necessário para o Rancher)
+# Instala o Rancher usando Helm
+# Configura o Rancher com um hostname usando sslip.io (para evitar problemas de certificado)
+# Mostra a URL de acesso do Rancher
+# Máquina que vai executar o K3s e o Rancher
+---
+- name: Desativa firewall (UFW)
+  service:
+    name: ufw
+    state: stopped
+    enabled: no
+
+- name: Instala K3s
+  shell: curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.25.13+k3s1 sh -s - server
+  args:
+    creates: /usr/local/bin/k3s
+
+- name: Aguarda K3s inicializar
+  shell: k3s kubectl get nodes
+  register: k3s_status
+  until: k3s_status.rc == 0
+  retries: 30
+  delay: 10
+
+- name: Obtém o kubeconfig
+  shell: cat /etc/rancher/k3s/k3s.yaml
+  register: kubeconfig_content
+
+- name: Obtém IP do servidor
+  shell: hostname -I | awk '{print $1}'
+  register: server_ip
+
+- name: Modifica e salva kubeconfig
+  local_action:
+    module: copy
+    content: "{{ kubeconfig_content.stdout | replace('127.0.0.1', server_ip.stdout) }}"
+    dest: "./kubeconfig"
+  become: false
+
+- name: Instala Helm
+  shell: curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+- name: Adiciona repo do Rancher
+  shell: |
+    helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
+    helm repo update
+
+- name: Instala cert-manager CRDs
+  shell: |
+    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.crds.yaml
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Instala cert-manager
+  shell: |
+    helm repo add jetstack https://charts.jetstack.io
+    helm repo update
+    helm install cert-manager jetstack/cert-manager \
+      --namespace cert-manager \
+      --create-namespace \
+      --version v1.11.0
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Aguarda cert-manager estar pronto
+  shell: kubectl -n cert-manager wait --for=condition=Ready pods --all --timeout=300s
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Instala Rancher
+  shell: |
+    helm install rancher rancher-stable/rancher \
+      --namespace cattle-system \
+      --create-namespace \
+      --set hostname={{ server_ip.stdout }}.sslip.io \
+      --set bootstrapPassword=admin123 \
+      --set replicas=1
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Aguarda Rancher estar pronto
+  shell: kubectl -n cattle-system wait --for=condition=Ready pods --all --timeout=300s
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Mostra URL de acesso do Rancher
+  debug:
+    msg: |
+      Rancher está disponível em: https://{{ server_ip.stdout }}.sslip.io
+      Senha inicial: admin123
